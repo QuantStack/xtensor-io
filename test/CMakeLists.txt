@@ -73,21 +73,60 @@ endif()
 
 find_package(Threads)
 
-set(XTENSOR_IO_TESTS
-    main.cpp
-    test_xgdal.cpp
-    test_xnpz.cpp
-    test_xhighfive.cpp
-    test_ximage.cpp
-    test_xaudio.cpp
-    test_xio_blosc.cpp
-    test_xio_gzip.cpp
-    test_xio_zlib.cpp
-    test_xio_binary.cpp
-    test_xio_gcs_handler.cpp
-    test_xio_aws_handler.cpp
-    test_xio_gdal_handler.cpp
-)
+set(XTENSOR_IO_TESTS main.cpp test_xio_binary.cpp)
+set(XTENSOR_IO_FILES)
+
+if (HAVE_GDAL)
+    list(APPEND XTENSOR_IO_TESTS test_xgdal.cpp test_xio_gdal_handler.cpp)
+endif()
+
+if (HAVE_ZLIB)
+    list(APPEND XTENSOR_IO_TESTS test_xnpz.cpp test_xio_zlib.cpp test_xio_gzip.cpp)
+    list(
+        APPEND
+        XTENSOR_IO_FILES
+        compressed.npz
+        uncompressed.npz
+        compressed64.npz
+        uncompressed64.npz
+        test.gz
+    )
+endif()
+
+if (HAVE_HighFive)
+    list(APPEND XTENSOR_IO_TESTS test_xhighfive.cpp)
+    list(APPEND XTENSOR_IO_FILES archive.h5)
+endif()
+
+if (HAVE_OIIO)
+    list(APPEND XTENSOR_IO_TESTS test_ximage.cpp)
+    list(
+        APPEND
+        XTENSOR_IO_FILES
+        test.png
+        test.jpg
+        test.gif
+        big.jpg
+    )
+endif()
+
+if (HAVE_SndFile)
+    list(APPEND XTENSOR_IO_TESTS test_xaudio.cpp)
+    list(APPEND XTENSOR_IO_FILES xtensor.wav)
+endif()
+
+if (HAVE_Blosc)
+    list(APPEND XTENSOR_IO_TESTS test_xio_blosc.cpp)
+    list(APPEND XTENSOR_IO_FILES test.blosc)
+endif()
+
+if (HAVE_storage_client)
+    list(APPEND XTENSOR_IO_TESTS test_xio_gcs_handler.cpp)
+endif()
+
+if (HAVE_AWSSDK)
+    list(APPEND XTENSOR_IO_TESTS test_xio_aws_handler.cpp)
+endif()
 
 set(XTENSOR_IO_HO_TESTS
     main.cpp
@@ -96,21 +135,6 @@ set(XTENSOR_IO_HO_TESTS
 )
 
 # Add files for tests
-set(XTENSOR_IO_FILES
-    archive.h5
-    compressed.npz
-    uncompressed.npz
-    compressed64.npz
-    uncompressed64.npz
-    test.png
-    test.jpg
-    test.gif
-    test.blosc
-    test.gz
-    big.jpg
-    xtensor.wav
-)
-
 foreach(filename IN LISTS XTENSOR_IO_FILES)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/files/${filename}
         ${CMAKE_CURRENT_BINARY_DIR}/files/${filename} COPYONLY)
